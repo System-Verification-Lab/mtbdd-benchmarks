@@ -1,6 +1,3 @@
-[submodule "tools/q-sylvan"]
-	path = tools/q-sylvan
-	url = https://github.com/sebastiaanbrand/q-sylvan.git
 [submodule "tools/mqt-ddsim"]
 	path = tools/mqt-ddsim
 	url = https://github.com/cda-tum/mqt-ddsim.git
@@ -11,3 +8,6 @@
 	path = tools/Quasimodo
 	url = https://github.com/trishullab/Quasimodo.git
 	ignore = dirty
+[submodule "tools/q-sylvan"]
+	path = tools/q-sylvan
+	url = git@github.com:System-Verification-Lab/q-sylvan.git
