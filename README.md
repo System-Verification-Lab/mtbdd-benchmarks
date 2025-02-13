@@ -4,7 +4,7 @@
 
 1. Clone this repository including its submodules.
 ```shell
-$ git clone --recurse-submodules https://github.com/sebastiaanbrand/q-sylvan-benchmarks.git
+$ git clone --recurse-submodules <this repo's url>
 ```
 
 2. Install basic build tools.
