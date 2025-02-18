@@ -17,6 +17,7 @@ NS_NAMES = { 0 : 'low', 1 : 'max', 2 : 'min', 3 : 'L2'}
 
 parser = argparse.ArgumentParser()
 parser.add_argument('dir', help="Experiments directory (the one which is a date+time).")
+parser.add_argument('--numerical', action='store_true', default=False, help="Generate n")
 parser.add_argument('--compare_vecs', action='store_true', default=False, help="Sanity check by comparing full state vectors (if present).")
 parser.add_argument('--timeoutt', default=600, type=int, help="Timeout time, used for plotting instanced which didn't finish.")
 
@@ -50,6 +51,8 @@ class PlotPipeline:
     @staticmethod
     def get_PlotPipeline(args):
         """ Choose between processing sim or eqcheck results. """
+        if args.numerical:
+            return NumericalStabilityPlotPipeline(args)
         run_script = os.path.join(args.dir, 'run_all.sh')
         with open(run_script, 'r', encoding='utf-8') as f:
             text = f.read()
@@ -121,6 +124,30 @@ class SimPlotPipeline(PlotPipeline):
         print(f"Writing tables to {pr_plot.tables_dir(self.args)}")
         Path(pr_plot.tables_dir(self.args)).mkdir(parents=True, exist_ok=True)
         pr_plot.latex_table_simulation(self.df, self.args)
+
+
+class NumericalStabilityPlotPipeline(SimPlotPipeline):
+
+    res_cols = ['exp_id', 'applied_gates', 'final_nodes', 'max_nodes', 'norm',
+                'simulation_time', 'precision', 'tolerance', 'status']
+
+    def write_info(self):
+        """
+        Write some summary information.
+        """
+        pass
+
+    def sanity_checks(self):
+        """
+        Check norms (+ fidelity of vectors if given) and write to file.
+        """
+        pass
+
+    def plot_all(self):
+        """
+        Renerate all relevant simulation plots.
+        """
+        pr_plot.plot_error_heatmaps(self.df, self.args)
 
 
 class EqCheckPlotPipeline(PlotPipeline):

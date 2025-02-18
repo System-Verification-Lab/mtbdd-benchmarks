@@ -7,6 +7,7 @@ import itertools
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.ticker import LogLocator
 
@@ -469,6 +470,36 @@ def plot_multicore_scatter_sharing(df : pd.DataFrame, args, scaling='log'):
                     COLORS, categories, diagonals=[1/w],
                     x_scale=scaling, y_scale=scaling,
                     cosiness=1.6)
+
+
+
+def plot_error_heatmaps(df : pd.DataFrame, args):
+    """
+    For every circuit type
+    """
+    # Get only terminated runs
+    df = df.loc[(df['status'] == 'FINISHED')]
+
+    for (circ_type, prec), group in df.groupby(['circuit_type', 'precision']):
+        
+        
+        heatmap_data = group.pivot(index='n_qubits', columns='tolerance', values='norm')  # TODO: use error instead of norm
+        print(heatmap_data)
+
+        fig, ax = plt.subplots()
+        sns.heatmap(heatmap_data, ax=ax)
+
+        # save figure
+        for _format in FORMATS:
+            output_dir = os.path.join(plots_dir(args),'error_heatmaps', _format)
+            outputpath = os.path.join(output_dir, f"{circ_type}_{int(prec)}")
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            fig.savefig(f"{outputpath}.{_format}")
+            fig.clear()
+        
+        exit()
+
+
 
 
 def latex_table_simulation(df : pd.DataFrame, args):
