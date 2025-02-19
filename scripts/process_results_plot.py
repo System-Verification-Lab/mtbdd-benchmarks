@@ -507,7 +507,7 @@ def plot_error_heatmaps(df : pd.DataFrame, args):
             outputpath = os.path.join(output_dir, f"{circ_type}_{int(prec)}")
             Path(output_dir).mkdir(parents=True, exist_ok=True)
             fig.savefig(f"{outputpath}.{_format}")
-            fig.clear()
+        fig.clear()
 
 
 def latex_table_simulation(df : pd.DataFrame, args):
