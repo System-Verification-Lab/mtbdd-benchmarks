@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from matplotlib.ticker import LogLocator
-from matplotlib.colors import LogNorm, Colormap
+from matplotlib.ticker import LogLocator, FormatStrFormatter
+from matplotlib.colors import LogNorm
 
 
 FORMATS = ['png', 'pdf']
@@ -497,6 +497,8 @@ def plot_error_heatmaps(df : pd.DataFrame, args):
         sns.heatmap(heatmap_data, ax=ax, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=cmap)
 
         # styling
+        labels = ['%.0e' % float(t.get_text()) for t in ax.get_xticklabels()]
+        ax.set_xticklabels(labels)
         fig.tight_layout()
 
         # save figure
