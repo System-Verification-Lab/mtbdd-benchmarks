@@ -134,6 +134,7 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
 
     def load_data(self):
         super().load_data()
+        self.df = self.df.astype({'precision': 'Int64'}, errors='ignore')
         self.df['norm_error'] = (1 - self.df['norm']).abs()
 
     def write_info(self):
@@ -152,7 +153,10 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
         """
         Renerate all relevant simulation plots.
         """
-        pr_plot.plot_error_heatmaps(self.df, self.args)
+        pr_plot.plot_circuit_heatmaps(self.df, self.args, groupby=['circuit_type', 'precision'], 
+                                      x_axis='n_qubits',  y_axis='tolerance', c_axis='norm_error')
+        pr_plot.plot_circuit_heatmaps(self.df, self.args, groupby=['circuit_type', 'precision'], 
+                                      x_axis='n_qubits',  y_axis='tolerance', c_axis='max_nodes')
 
 
 class EqCheckPlotPipeline(PlotPipeline):

@@ -473,22 +473,21 @@ def plot_multicore_scatter_sharing(df : pd.DataFrame, args, scaling='log'):
                     cosiness=1.6)
 
 
-
-def plot_error_heatmaps(df : pd.DataFrame, args):
+def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis='n_qubits', y_axis='tolerance', c_axis='norm_error'):
     """
-    For every circuit type
+    For every 'groupby'circuit type and precision plot x_axis vs y_axis vs c_axis.
     """
     # Get only terminated runs
     df = df.loc[(df['status'] == 'FINISHED')]
 
     # normalze vmin and vmax across all plots
-    vmin = min(filter(lambda x : x > 0, df['norm_error']))
-    vmax = df['norm_error'].max()
-    df.loc[(df['norm_error'] == 0), 'norm_error'] = vmin
+    vmin = min(1, min(filter(lambda x : x > 0, df[c_axis])))
+    vmax = df[c_axis].max()
+    df.loc[(df[c_axis] == 0), c_axis] = vmin # avoid 0 values for log scale
 
-    for (circ_type, prec), group in df.groupby(['circuit_type', 'precision']):
+    for group_id, group in df.groupby(groupby):
         # shape data as table
-        heatmap_data = group.pivot(index='n_qubits', columns='tolerance', values='norm_error')
+        heatmap_data = group.pivot(index=x_axis, columns=y_axis, values=c_axis)
         heatmap_data.sort_index(inplace=True, ascending=False)
 
         # plot
@@ -503,11 +502,12 @@ def plot_error_heatmaps(df : pd.DataFrame, args):
 
         # save figure
         for _format in FORMATS:
-            output_dir = os.path.join(plots_dir(args),'error_heatmaps', _format)
-            outputpath = os.path.join(output_dir, f"{circ_type}_{int(prec)}")
+            output_dir = os.path.join(plots_dir(args),'heatmaps','_'.join(groupby + [c_axis]), _format)
+            outputpath = os.path.join(output_dir, f"{'_'.join([str(x) for x in group_id])}_{c_axis}")
             Path(output_dir).mkdir(parents=True, exist_ok=True)
             fig.savefig(f"{outputpath}.{_format}")
         fig.clear()
+        plt.close()
 
 
 def latex_table_simulation(df : pd.DataFrame, args):
