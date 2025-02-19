@@ -130,6 +130,11 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
 
     res_cols = ['exp_id', 'applied_gates', 'final_nodes', 'max_nodes', 'norm',
                 'simulation_time', 'precision', 'tolerance', 'status']
+    
+
+    def load_data(self):
+        super().load_data()
+        self.df['norm_error'] = (1 - self.df['norm']).abs()
 
     def write_info(self):
         """

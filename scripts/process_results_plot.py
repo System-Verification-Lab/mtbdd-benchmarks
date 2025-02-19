@@ -10,6 +10,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.ticker import LogLocator
+from matplotlib.colors import LogNorm, Colormap
 
 
 FORMATS = ['png', 'pdf']
@@ -480,14 +481,23 @@ def plot_error_heatmaps(df : pd.DataFrame, args):
     # Get only terminated runs
     df = df.loc[(df['status'] == 'FINISHED')]
 
-    for (circ_type, prec), group in df.groupby(['circuit_type', 'precision']):
-        
-        
-        heatmap_data = group.pivot(index='n_qubits', columns='tolerance', values='norm')  # TODO: use error instead of norm
-        print(heatmap_data)
+    # normalze vmin and vmax across all plots
+    vmin = min(filter(lambda x : x > 0, df['norm_error']))
+    vmax = df['norm_error'].max()
+    df.loc[(df['norm_error'] == 0), 'norm_error'] = vmin
 
+    for (circ_type, prec), group in df.groupby(['circuit_type', 'precision']):
+        # shape data as table
+        heatmap_data = group.pivot(index='n_qubits', columns='tolerance', values='norm_error')
+        heatmap_data.sort_index(inplace=True, ascending=False)
+
+        # plot
         fig, ax = plt.subplots()
-        sns.heatmap(heatmap_data, ax=ax)
+        cmap = sns.color_palette(palette='rocket', as_cmap=True)
+        sns.heatmap(heatmap_data, ax=ax, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=cmap)
+
+        # styling
+        fig.tight_layout()
 
         # save figure
         for _format in FORMATS:
@@ -496,10 +506,6 @@ def plot_error_heatmaps(df : pd.DataFrame, args):
             Path(output_dir).mkdir(parents=True, exist_ok=True)
             fig.savefig(f"{outputpath}.{_format}")
             fig.clear()
-        
-        exit()
-
-
 
 
 def latex_table_simulation(df : pd.DataFrame, args):
