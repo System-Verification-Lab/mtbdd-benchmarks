@@ -133,6 +133,9 @@ def experiments_sim_qasm(args):
         f_mqt.write("#!/bin/bash\n\n# MQT DDSIM circuit simulation benchmarks\n")
         f_qsy.write("#!/bin/bash\n\n# Q-Sylvan circuit simulation benchmarks\n")
         f_qua.write("#!/bin/bash\n\n# Quasimodo circuit simulation benchmarks\n")
+        if len(args.precisions) > 1 or len(args.tolerances) > 1:
+            f_all.write("# Testing numerical precision\n")
+            f_qsy.write("# Testing numerical precision\n")
 
         # get qasm files
         filepaths = []

@@ -17,7 +17,6 @@ NS_NAMES = { 0 : 'low', 1 : 'max', 2 : 'min', 3 : 'L2'}
 
 parser = argparse.ArgumentParser()
 parser.add_argument('dir', help="Experiments directory (the one which is a date+time).")
-parser.add_argument('--numerical', action='store_true', default=False, help="Generate n")
 parser.add_argument('--compare_vecs', action='store_true', default=False, help="Sanity check by comparing full state vectors (if present).")
 parser.add_argument('--timeoutt', default=600, type=int, help="Timeout time, used for plotting instanced which didn't finish.")
 
@@ -51,12 +50,12 @@ class PlotPipeline:
     @staticmethod
     def get_PlotPipeline(args):
         """ Choose between processing sim or eqcheck results. """
-        if args.numerical:
-            return NumericalStabilityPlotPipeline(args)
         run_script = os.path.join(args.dir, 'run_all.sh')
         with open(run_script, 'r', encoding='utf-8') as f:
             text = f.read()
-            if "Circuit equivalence checking benchmarks" in text:
+            if "Testing numerical precision" in text:
+                return NumericalStabilityPlotPipeline(args)
+            elif "Circuit equivalence checking benchmarks" in text:
                 return EqCheckPlotPipeline(args)
             else:
                 return SimPlotPipeline(args)
@@ -154,9 +153,11 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
         Renerate all relevant simulation plots.
         """
         pr_plot.plot_circuit_heatmaps(self.df, self.args, groupby=['circuit_type', 'precision'], 
-                                      x_axis='n_qubits',  y_axis='tolerance', c_axis='norm_error')
+                                      x_axis='n_qubits',  y_axis='tolerance', c_axis='norm_error',
+                                      x_label='merging parameter', y_label='qubits')
         pr_plot.plot_circuit_heatmaps(self.df, self.args, groupby=['circuit_type', 'precision'], 
-                                      x_axis='n_qubits',  y_axis='tolerance', c_axis='max_nodes')
+                                      x_axis='n_qubits',  y_axis='tolerance', c_axis='max_nodes',
+                                      x_label='merging parameter', y_label='qubits')
 
 
 class EqCheckPlotPipeline(PlotPipeline):

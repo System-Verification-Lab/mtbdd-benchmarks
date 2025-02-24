@@ -45,6 +45,21 @@ def tables_dir(args):
     """
     return os.path.join(args.dir, 'tables')
 
+def latex_float(f : str | float, short_minus=True):
+    if type(f) is str:
+        f = float(f)
+    float_str = f"{f:.2e}"
+    base, exponent = float_str.split("e")
+    exponent = str(int(exponent))
+    if short_minus:
+        exponent = exponent.replace('-', '\\text{-}')
+    if float(base) == 0:
+        return "0"
+    elif float(base) == 1:
+        return "10^{" + exponent + "}"
+    else:
+        return base + "\\times 10^{" + exponent + "}"
+
 
 def _plot_diagonal_lines(ax, min_val, max_val, at):
     """
@@ -473,7 +488,7 @@ def plot_multicore_scatter_sharing(df : pd.DataFrame, args, scaling='log'):
                     cosiness=1.6)
 
 
-def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis='n_qubits', y_axis='tolerance', c_axis='norm_error'):
+def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_axis, x_label=None, y_label=None, palette='rocket'):
     """
     For every 'groupby'circuit type and precision plot x_axis vs y_axis vs c_axis.
     """
@@ -490,24 +505,40 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis='n_qubits', y
         heatmap_data = group.pivot(index=x_axis, columns=y_axis, values=c_axis)
         heatmap_data.sort_index(inplace=True, ascending=False)
 
-        # plot
-        fig, ax = plt.subplots()
-        cmap = sns.color_palette(palette='rocket', as_cmap=True)
-        sns.heatmap(heatmap_data, ax=ax, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=cmap)
+        # left and right versions
+        for side in ['left', 'right']:
+            # plot
+            fig, ax = plt.subplots(layout='constrained')
+            ax.set_title(' ', fontsize=1) # little extra padding on top for highest cbar tick
+            cmap = sns.color_palette(palette=palette, as_cmap=True)
+            sns.heatmap(heatmap_data, ax=ax, norm=LogNorm(vmin=vmin, vmax=vmax), square=True, 
+                        cmap=cmap, cbar=(side == 'right'))
 
-        # styling
-        labels = ['%.0e' % float(t.get_text()) for t in ax.get_xticklabels()]
-        ax.set_xticklabels(labels)
-        fig.tight_layout()
+            # styling
+            xlabels = [f"${latex_float(f.get_text(), False)}$" for f in ax.get_xticklabels()]
+            ax.set_xticklabels(xlabels)
+            if x_label is not None:
+                ax.set_xlabel(x_label)
+            if y_label is not None:
+                ax.set_ylabel(y_label)
+            if side == 'right':
+                ax.set_ylabel(None)
+                ax.set_yticklabels([])
+            
+            # squeeze/stretch
+            cosiness = 1.4
+            fig.draw_without_rendering()
+            tb = fig.get_tightbbox(fig.canvas.get_renderer())
+            fig.set_size_inches(tb.width/cosiness, tb.height/cosiness)
 
-        # save figure
-        for _format in FORMATS:
-            output_dir = os.path.join(plots_dir(args),'heatmaps','_'.join(groupby + [c_axis]), _format)
-            outputpath = os.path.join(output_dir, f"{'_'.join([str(x) for x in group_id])}_{c_axis}")
-            Path(output_dir).mkdir(parents=True, exist_ok=True)
-            fig.savefig(f"{outputpath}.{_format}")
-        fig.clear()
-        plt.close()
+            # save figure
+            for _format in FORMATS:
+                output_dir = os.path.join(plots_dir(args),'heatmaps','_'.join(groupby + [c_axis]), _format)
+                outputpath = os.path.join(output_dir, f"{'_'.join([str(x) for x in group_id])}_{c_axis}_{side}")
+                Path(output_dir).mkdir(parents=True, exist_ok=True)
+                fig.savefig(f"{outputpath}.{_format}")
+            fig.clear()
+            plt.close()
 
 
 def latex_table_simulation(df : pd.DataFrame, args):
