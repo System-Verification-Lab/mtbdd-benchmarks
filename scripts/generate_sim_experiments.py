@@ -35,6 +35,7 @@ parser.add_argument('--max_qubits', type=int, help="Only include circuits up to 
 parser.add_argument('--norm_strat', choices=['low','max','min','l2'], default='max', help="Norm strat to use for all q-sylvan runs.")
 parser.add_argument('--tolerances', nargs='+', default=['1e-14'], help="Edge/leaf value merging tolerances to test.")
 parser.add_argument('--precisions', nargs='+', default=['64'], help="MTBDD MPC precisions to test..")
+parser.add_argument('--ground_truth_prec', action='store', default=128, type=int, help="Ground truth precision (0 disables ground truth run).")
 parser.add_argument('--dd_types', nargs='+', choices=['mtbdd','evdd'], default=['mtbdd'], help="DD type(s) to run for q-sylvan.")
 parser.add_argument('--wgt_tab_size', type=int, default=23, help="log2 of max edge weight table size.")
 parser.add_argument('--node_tab_size', type=int, default=25, help="log2 of max node table size.")
@@ -214,6 +215,28 @@ def experiments_sim_qasm(args):
                                                 'workers' : w}, meta_file, indent=2)
             # Q-Sylvan (MTBDD)
             if 'q-sylvan' in args.tools and 'mtbdd' in args.dd_types:
+                # ground truth run
+                if args.ground_truth_prec != 0:
+                    prec = args.ground_truth_prec
+                    w = 1
+                    tol = 0
+                    exp_counter += 1
+                    json_output = f"{output_dir}/json/{filename[:-5]}_qsylvan_{exp_counter}.json"
+                    log         = f"{output_dir}/logs/{filename[:-5]}_qsylvan_{exp_counter}.log"
+                    meta        = f"{output_dir}/meta/{filename[:-5]}_qsylvan_{exp_counter}.json"
+                    prec_arg = f' --precision {prec}'
+                    tol_arg = f' --tol {tol}'
+                    f_all.write(QSY_QASM.format(args.timeout, 'mtbdd', filepath, w, qsy_mtbdd_args+prec_arg+tol_arg, json_output, log))
+                    f_qsy.write(QSY_QASM.format(args.timeout, 'mtbdd', filepath, w, qsy_mtbdd_args+prec_arg+tol_arg, json_output, log))
+                    with open(meta, 'w', encoding='utf-8') as meta_file:
+                        json.dump({ 'circuit_type' : filename.split('_')[0],
+                                    'circuit' : filename[:-5],
+                                    'dd_type' : 'mtbdd',
+                                    'exp_id' : exp_counter,
+                                    'n_qubits' : get_num_qubits(filename),
+                                    'tool' : 'q-sylvan',
+                                    'workers' : w}, meta_file, indent=2)
+                # remaining runs
                 for w in args.workers:
                     for prec in args.precisions:
                         for tol in args.tolerances:
