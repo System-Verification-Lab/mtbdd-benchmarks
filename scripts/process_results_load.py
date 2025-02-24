@@ -5,10 +5,19 @@ import os
 import re
 import json
 import math
+from pathlib import Path
 import pandas as pd
+import numpy as np
 
 
 CIRCUIT_CATEGORY_FILE = os.path.join(os.path.dirname(__file__), 'circuit_categories.json')
+
+
+def _to_complex_vector(state_vector_json):
+    """
+    Obtain a 2^n x 1 complex vector from the 2^n x 2 data structure.
+    """
+    return np.apply_along_axis(lambda args: [complex(*args)], 1, state_vector_json)
 
 
 def _json_is_empty(log_filepath : str):
@@ -89,7 +98,6 @@ def load_json(exp_dir : str, add_missing = False):
     """
     Load the data (and do some preprocessing).
     """
-    df = pd.DataFrame()
     rows = []
     json_dir = os.path.join(exp_dir, 'json')
     for filename in sorted(os.listdir(json_dir)):
@@ -184,3 +192,85 @@ def add_circuit_categories(df : pd.DataFrame):
         else:
             df.at[i, 'category'] = circ_type
     return df
+
+
+def compute_errors_from_json(df : pd.DataFrame, exp_dir : str, errors_dir : str):
+    """
+    Compute state-vector errors from json in given dir and write to errors_dir.
+    As ground truth, take the runs with the highest precision, and tolerance = 0.
+    """
+    Path(errors_dir).mkdir(parents=True, exist_ok=False)
+
+    # ids of ground truth runs
+    gt_ids = df.loc[(df['precision'] == df['precision'].max()) & 
+                    (df['tolerance'] == 0) & 
+                    (df['workers'] == 1)].index
+
+    # pair up all files
+    ground_truths = {} # circuit -> filename
+    benchmarks = {} # filename -> circuit
+    exp_ids = {} # filename -> exp_id
+    for filename in sorted(os.listdir(exp_dir)):
+        filename_info = re.split('_qsylvan_|.json', filename)
+        circuit, exp_id = filename_info[0], int(filename_info[1])
+        if exp_id in gt_ids:
+            ground_truths[circuit] = filename
+        else:
+            benchmarks[filename] = circuit
+        exp_ids[filename] = exp_id
+    
+    # check vectors for all pairs
+    rows = []
+    for bench_file in benchmarks.keys():
+
+        # get filepaths
+        gt_path    = os.path.join(exp_dir, ground_truths[benchmarks[bench_file]])
+        bench_path = os.path.join(exp_dir, bench_file)
+
+        # try to read files
+        vec_bench = None
+        vec_gt = None
+        try:
+            with open(bench_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if 'state_vector' in data:
+                    vec_bench = _to_complex_vector(data['state_vector'])
+                else:
+                    print(f"    No state vector in {bench_path}, skipping")
+            with open(gt_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if 'state_vector' in data:
+                    vec_gt = _to_complex_vector(data['state_vector'])
+                else:
+                    print(f"    No state vector in {bench_path}, skipping")
+            pass
+        except:
+            print(f"    Could not get json data from {bench_path} or {gt_path}, skipping")
+        
+        # add max (relative) error to results
+        # TODO: other error metrics? (e.g. avg?)
+        row = {}
+        deltas = np.abs(vec_gt - vec_bench)
+        row['exp_id'] = exp_ids[bench_file]
+        row['max_error_abs'] = deltas.max()
+        row['max_error_rel'] = deltas.max() / np.abs(vec_bench).max()
+        rows.append(row)
+        # write to file to make re-plotting faster
+        output_file = os.path.join(errors_dir, bench_file)
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(row, f, indent=2)
+
+    return pd.DataFrame(rows).set_index('exp_id')
+
+
+def load_errors_from_json(errors_dir : str):
+    """
+    Load errors from json files in given dir.
+    """
+    rows = []
+    for filename in sorted(os.listdir(errors_dir)):
+        filepath = os.path.join(errors_dir, filename)
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            rows.append(data)
+    return pd.DataFrame(rows).set_index('exp_id')

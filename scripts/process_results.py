@@ -135,6 +135,13 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
         super().load_data()
         self.df = self.df.astype({'precision': 'Int64'}, errors='ignore')
         self.df['norm_error'] = (1 - self.df['norm']).abs()
+        # load state vector errors, compute if not present
+        errors_dir = os.path.join(self.args.dir, 'numerical_errors')
+        if not os.path.isdir(errors_dir):
+            errors_df = pr_load.compute_errors_from_json(self.df, os.path.join(self.args.dir, 'json'), errors_dir)
+        else:
+            errors_df = pr_load.load_errors_from_json(errors_dir)
+        self.df = self.df.join(errors_df)
 
     def write_info(self):
         """
