@@ -223,6 +223,11 @@ def compute_errors_from_json(df : pd.DataFrame, exp_dir : str, errors_dir : str)
     rows = []
     for bench_file in benchmarks.keys():
 
+        # skip if no ground truth for this circuit
+        if benchmarks[bench_file] not in ground_truths:
+            print(f"    No ground truth for {bench_file}, skipping")
+            continue
+
         # get filepaths
         gt_path    = os.path.join(exp_dir, ground_truths[benchmarks[bench_file]])
         bench_path = os.path.join(exp_dir, bench_file)

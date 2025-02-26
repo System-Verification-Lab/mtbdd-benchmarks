@@ -54,7 +54,7 @@ class PlotPipeline:
         with open(run_script, 'r', encoding='utf-8') as f:
             text = f.read()
             if "Testing numerical precision" in text:
-                return NumericalStabilityPlotPipeline(args)
+                return NumericalStabilityPlotPipeline(args, has_vectors=("--state-vector" in text))
             elif "Circuit equivalence checking benchmarks" in text:
                 return EqCheckPlotPipeline(args)
             else:
@@ -129,7 +129,10 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
 
     res_cols = ['exp_id', 'applied_gates', 'final_nodes', 'max_nodes', 'norm',
                 'simulation_time', 'precision', 'tolerance', 'status']
-    
+
+    def __init__(self, args, has_vectors=False):
+        super().__init__(args)
+        self.has_vectors = has_vectors
 
     def load_data(self):
         super().load_data()
@@ -137,11 +140,14 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
         self.df['norm_error'] = (1 - self.df['norm']).abs()
         # load state vector errors, compute if not present
         errors_dir = os.path.join(self.args.dir, 'numerical_errors')
-        if not os.path.isdir(errors_dir):
-            errors_df = pr_load.compute_errors_from_json(self.df, os.path.join(self.args.dir, 'json'), errors_dir)
-        else:
-            errors_df = pr_load.load_errors_from_json(errors_dir)
-        self.df = self.df.join(errors_df)
+        if self.has_vectors:
+            if not os.path.isdir(errors_dir):
+                print(f"Computing numerical errors on vectors and writing to {errors_dir}")
+                errors_df = pr_load.compute_errors_from_json(self.df, os.path.join(self.args.dir, 'json'), errors_dir)
+            else:
+                print(f"Loading numerical errors on vectors from {errors_dir}")
+                errors_df = pr_load.load_errors_from_json(errors_dir)
+            self.df = self.df.join(errors_df)
 
     def write_info(self):
         """
@@ -159,12 +165,15 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
         """
         Renerate all relevant simulation plots.
         """
-        pr_plot.plot_circuit_heatmaps(self.df, self.args, groupby=['circuit_type', 'precision'], 
-                                      x_axis='n_qubits',  y_axis='tolerance', c_axis='norm_error',
-                                      x_label='merging parameter', y_label='qubits')
-        pr_plot.plot_circuit_heatmaps(self.df, self.args, groupby=['circuit_type', 'precision'], 
-                                      x_axis='n_qubits',  y_axis='tolerance', c_axis='max_nodes',
-                                      x_label='merging parameter', y_label='qubits')
+        print(f"Writing plots to {pr_plot.plots_dir(self.args)}")
+        # plot c_axis for n_qubits vs tolerance, grouped by circuit type (and precision)
+        data = self.df.loc[(self.df['precision'] == 64)]
+        for c_axis in ['max_error_abs', 'max_error_rel', 'norm_error', 'max_nodes']:
+            if c_axis not in data:
+                continue
+            pr_plot.plot_circuit_heatmaps(data, self.args, groupby=['circuit_type', 'precision'], 
+                                        x_axis='n_qubits',  y_axis='tolerance', c_axis=c_axis,
+                                        x_label='merging parameter', y_label='qubits')
 
 
 class EqCheckPlotPipeline(PlotPipeline):

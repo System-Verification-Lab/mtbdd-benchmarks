@@ -493,7 +493,7 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
     For every 'groupby'circuit type and precision plot x_axis vs y_axis vs c_axis.
     """
     # Get only terminated runs
-    df = df.loc[(df['status'] == 'FINISHED')]
+    df = df.loc[(df['status'] == 'FINISHED') & df[c_axis].notnull()]
 
     # normalze vmin and vmax across all plots
     vmin = min(1, min(filter(lambda x : x > 0, df[c_axis])))
