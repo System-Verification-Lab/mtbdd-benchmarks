@@ -45,7 +45,7 @@ def tables_dir(args):
     """
     return os.path.join(args.dir, 'tables')
 
-def latex_float(f : str | float, short_minus=True):
+def latex_float(f : str | float, short_minus=False):
     if type(f) is str:
         f = float(f)
     float_str = f"{f:.2e}"
