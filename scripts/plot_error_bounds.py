@@ -8,7 +8,23 @@ from process_results_plot import latex_float
 LSTYLES = ['dashed','dotted','dashdot','solid']
 
 
-def plot_lines(lines_xs, lines_ys, labels, cosiness=1.7):
+def error1(n, epsilon, vmax=1):
+    return Decimal(vmax)*(Decimal(1) + Decimal(epsilon))**Decimal(n) - Decimal(1)
+
+
+def error2(n, delta, epsilon):
+    error2 = Decimal(0)
+    for j in range(n+1):
+        error2 += Decimal(2**j) * (Decimal(1) + Decimal(epsilon)) ** Decimal(j)
+    error2 *= Decimal(delta)
+    return error2
+
+
+def compute_error(n, delta, epsilon, vmax=1):
+    return error1(n, epsilon, vmax) + error2(n, delta, epsilon)
+
+
+def plot_lines(lines_xs, lines_ys, labels, output_name, cosiness=1.7):
     """
     Plot multiple lines (lines_xs and lines_ys should be 2D) with given labels (1D).
     """
@@ -28,12 +44,12 @@ def plot_lines(lines_xs, lines_ys, labels, cosiness=1.7):
     tb = fig.get_tightbbox(fig.canvas.get_renderer())
     fig.set_size_inches(tb.width/cosiness, tb.height/cosiness)
 
-    fig.savefig(f"experiments/error2_plot.pdf")
+    fig.savefig(output_name)
     fig.clear()
     plt.close()
 
 
-def plot_error2(ns, deltas, epsilon):
+def plot_errors_deltas(ns, deltas, epsilon):
     """
     Plot 'n' vs error bound, for different values of delta and single epsilon.
     """
@@ -43,19 +59,37 @@ def plot_error2(ns, deltas, epsilon):
     for delta in deltas:
         errors = []
         for n in ns:
-            error = Decimal(0)
-            for j in range(n+1):
-                error += Decimal(2**j) * (Decimal(1) + Decimal(epsilon)) ** Decimal(j)
-            error *= Decimal(delta)
+            error = compute_error(n, delta, epsilon)
             errors.append(float(error))
         lines_xs.append(np.array(ns))
         lines_ys.append(np.array(errors))
         legend.append(f"$\\delta = {latex_float(delta)}$")
-    plot_lines(lines_xs, lines_ys, legend)
+    plot_lines(lines_xs, lines_ys, legend, f"experiments/error_deltas_plot.pdf")
+
+
+def write_errors_1_and_2(ns, delta, epsilon):
+    """
+    Write info for Table 1.
+    """
+    for n in ns:
+        print("n       =", n)
+        print(f"error_1 = {error1(n, epsilon):.3e}")
+        print(f"error_2 = {error2(n, delta, epsilon):.3e}")
+        print()
+
+
+def write_delta_suggestions(ns, error_targ):
+    """
+    
+    """
+    print(ns)
+    print(error_targ)
 
 
 def main():
-    plot_error2(ns=range(10,21), deltas=[1e-10, 1e-8, 1e-6], epsilon=1e-15)
+    write_errors_1_and_2([10, 20, 30, 40, 50, 60], 1e-15, 1e-16)
+    write_delta_suggestions([10, 20, 30, 40, 50, 60], 1e-6)
+    plot_errors_deltas(ns=range(10,21), deltas=[1e-10, 1e-8, 1e-6], epsilon=1e-16)
 
 
 if __name__ == '__main__':
