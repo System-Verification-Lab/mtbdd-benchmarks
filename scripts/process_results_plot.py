@@ -506,13 +506,13 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
         heatmap_data.sort_index(inplace=True, ascending=False)
 
         # left and right versions
-        for side in ['left', 'right']:
+        for side in ['left', 'right', 'complete']:
             # plot
             fig, ax = plt.subplots(layout='constrained')
             ax.set_title(' ', fontsize=1) # little extra padding on top for highest cbar tick
             cmap = sns.color_palette(palette=palette, as_cmap=True)
             sns.heatmap(heatmap_data, ax=ax, norm=LogNorm(vmin=vmin, vmax=vmax), square=True, 
-                        cmap=cmap, cbar=(side == 'right'))
+                        cmap=cmap, cbar=(side != 'left'))
 
             # styling
             xlabels = [f"${latex_float(f.get_text(), False)}$" for f in ax.get_xticklabels()]
@@ -533,8 +533,8 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
 
             # save figure
             for _format in FORMATS:
-                output_dir = os.path.join(plots_dir(args),'heatmaps','_'.join(groupby + [c_axis]), _format)
-                outputpath = os.path.join(output_dir, f"{'_'.join([str(x) for x in group_id])}_{c_axis}_{side}")
+                output_dir = os.path.join(plots_dir(args),'heatmaps','_'.join(groupby + [c_axis]), side, _format)
+                outputpath = os.path.join(output_dir, f"{'_'.join([str(x) for x in group_id])}_{c_axis}")
                 Path(output_dir).mkdir(parents=True, exist_ok=True)
                 fig.savefig(f"{outputpath}.{_format}")
             fig.clear()
