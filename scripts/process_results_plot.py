@@ -21,6 +21,7 @@ EQTAB_SELECTION = ['graphstate', 'grover-noancilla', 'qaoa', 'qnn', 'qft',
 NEQTAB_SELECTION = ['grover-noancilla', 'qaoa', 'qft', 'qnn', 'qpe-inexact',
                     'vqe', 'wstate']
 ORDER = ['q-sylvan-alternating','q-sylvan-pauli','quokka-sharp','mqt-qcec-all']
+CIRCUIT_NAMES = {'qpeexact' : 'QPE exact', 'dj' : 'Deutsch–Jozsa', 'wstate': 'W state'}
 
 def plots_dir(args):
     """
@@ -488,7 +489,7 @@ def plot_multicore_scatter_sharing(df : pd.DataFrame, args, scaling='log'):
                     cosiness=1.6)
 
 
-def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_axis, x_label=None, y_label=None, palette='rocket'):
+def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_axis, x_label=None, y_label=None, title=None, palette='rocket'):
     """
     For every 'groupby'circuit type and precision plot x_axis vs y_axis vs c_axis.
     """
@@ -499,6 +500,18 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
     vmin = min(1, min(filter(lambda x : x > 0, df[c_axis])))
     vmax = df[c_axis].max()
     df.loc[(df[c_axis] == 0), c_axis] = vmin # avoid 0 values for log scale
+
+    # set font sizes
+    _small = 14
+    _medium = _small+2
+    _big = _medium+2
+    plt.rc('font', size=_small)
+    plt.rc('axes', titlesize=_small)
+    plt.rc('axes', labelsize=_medium)
+    plt.rc('axes', titlesize=_big)
+    plt.rc('xtick', labelsize=_small)
+    plt.rc('ytick', labelsize=_small)
+    plt.rc('legend', fontsize=_small)
 
     for group_id, group in df.groupby(groupby):
         # shape data as table
@@ -521,15 +534,20 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
                 ax.set_xlabel(x_label)
             if y_label is not None:
                 ax.set_ylabel(y_label)
+            if title is not None:
+                if group_id[0] in CIRCUIT_NAMES:
+                    ax.set_title(f'{CIRCUIT_NAMES[group_id[0]]}, {title}')
+                else:
+                    ax.set_title(f'{group_id}, {title}')
             if side == 'right':
                 ax.set_ylabel(None)
                 ax.set_yticklabels([])
             
-            # squeeze/stretch
-            cosiness = 1.4
+            # fit
             fig.draw_without_rendering()
             tb = fig.get_tightbbox(fig.canvas.get_renderer())
-            fig.set_size_inches(tb.width/cosiness, tb.height/cosiness)
+            fig.set_size_inches(tb.width, tb.height)
+
 
             # save figure
             for _format in FORMATS:
