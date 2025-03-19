@@ -168,9 +168,9 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
         print(f"Writing plots to {pr_plot.plots_dir(self.args)}")
         # plot c_axis for n_qubits vs tolerance, grouped by circuit type (and precision)
         data = self.df.loc[(self.df['precision'] == 64)]
-        for c_axis, title, pal in zip(['max_error_abs', 'final_nodes'], # 'max_error_rel', 'norm_error', 'max_nodes',
+        for c_axis, title, pal in zip(['max_error_abs', 'final_nodes'],
                                       ['max error',     'node count'],
-                                      ['rocket',        'mako']):       # 'rocket',        'rocket',     'mako',
+                                      ['rocket_r',      'mako_r']):
             if c_axis not in data:
                 continue
             pr_plot.plot_circuit_heatmaps(data, self.args, groupby=['circuit_type', 'precision'], 
