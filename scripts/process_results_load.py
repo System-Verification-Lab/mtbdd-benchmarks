@@ -253,12 +253,17 @@ def compute_errors_from_json(df : pd.DataFrame, exp_dir : str, errors_dir : str)
             print(f"    Could not get json data from {bench_path} or {gt_path}, skipping")
         
         # add max (relative) error to results
-        # TODO: other error metrics? (e.g. avg?)
+        # NOTE: vec_gt is not the actual ground truth (but rather a higher precision calculation).
+        # The relative errors when vec_gt[i] is supposed to be 0 but instead is very small
+        # are incorrect (supposed to be undefined) and create outliers in the plots.
+        # TODO: how to fix?
         row = {}
-        deltas = np.abs(vec_gt - vec_bench)
+        abs_errors = np.abs(vec_gt - vec_bench)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            rel_errors = abs_errors / np.abs(vec_gt)
         row['exp_id'] = exp_ids[bench_file]
-        row['max_error_abs'] = deltas.max()
-        row['max_error_rel'] = deltas.max() / np.abs(vec_bench).max()
+        row['max_error_abs'] = np.max(abs_errors)
+        row['max_error_rel'] = np.nanmax(rel_errors)
         rows.append(row)
         # write to file to make re-plotting faster
         output_file = os.path.join(errors_dir, bench_file)
