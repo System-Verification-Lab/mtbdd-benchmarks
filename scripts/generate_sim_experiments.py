@@ -28,6 +28,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('qasm_dir', help="Path of directory with .qasm files.")
 parser.add_argument('--name', help="Name for experiments dir.")
 parser.add_argument('--from_list', action=ReadLinesAction, help="Only include circuits in given list (.txt file).")
+parser.add_argument('--circ_selection', nargs='+', default=None, help="Select subset of circuit (prefixes, e.g. ae, dj, etc.).")
 parser.add_argument('--log_vector', action='store_true', default=False, help="Log entire final state vector.")
 parser.add_argument('--nqubits', type=int, nargs='+', help="Only include circuits of nqubits.")
 parser.add_argument('--min_qubits', type=int, help="Only include circuits with at leats min_qubits.")
@@ -89,6 +90,9 @@ def skip(filename : str, args):
             return True
     if args.from_list is not None:
         if filename not in args.from_list:
+            return True
+    if args.circ_selection is not None:
+        if filename.split('_')[0] not in args.circ_selection:
             return True
     return False
 
