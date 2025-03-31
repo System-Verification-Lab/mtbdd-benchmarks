@@ -166,3 +166,37 @@ def write_eqcheck_speedup_summary(df : pd.DataFrame, args):
     # write summary of speedups
     with open(os.path.join(args.dir, 'speedups_summary.json'), 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2)
+
+
+def update_min_max_values(df : pd.DataFrame, keys, args):
+    """
+    Write min and max values for keys
+    (to allow min/max values in plots to be synchronized between experiments).
+    """
+    # 1. get min, max values from data
+    min_max_values = {}
+    min_max_values['comment'] = "min and max values to sync colors/axes between plots"
+    min_max_values['comment2'] = "min is min(1, smallest non-zero)"
+    
+    for key in keys:
+        min_max_values[key] = {}
+        min_max_values[key]['min'] = min(1, min(filter(lambda x : x > 0, df[min])))
+        min_max_values[key]['max'] = df[key].max()
+
+    # 2. compare against previous values
+    filename = os.path.join(args.dir.split(os.path.sep)[0], 'min_max_values.json')
+    if os.path.isfile(filename):
+        with open(filename, 'r', encoding='utf-8') as f:
+            min_max_values_prev = json.load(f)
+            for key in keys:
+                if key in min_max_values_prev:
+                    min_max_values[key]['min'] = min(min_max_values[key]['min'], 
+                                                     min_max_values_prev[key]['min'])
+                    min_max_values[key]['max'] = max(min_max_values[key]['max'], 
+                                                     min_max_values_prev[key]['max'])
+    
+    # 3. write new values
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(min_max_values, f, indent=2)
+
+    return min_max_values

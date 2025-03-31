@@ -489,7 +489,8 @@ def plot_multicore_scatter_sharing(df : pd.DataFrame, args, scaling='log'):
                     cosiness=1.6)
 
 
-def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_axis, x_label=None, y_label=None, title=None, palette='rocket'):
+def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_axis, 
+                          min_max_values=None, x_label=None, y_label=None, title=None, palette='rocket'):
     """
     For every 'groupby'circuit type and precision plot x_axis vs y_axis vs c_axis.
     """
@@ -497,8 +498,12 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
     #df = df.loc[(df['status'] == 'FINISHED') & df[c_axis].notnull()]
 
     # normalze vmin and vmax across all plots
-    vmin = min(1, min(filter(lambda x : x > 0, df[c_axis])))
-    vmax = df[c_axis].max()
+    if min_max_values is None:
+        vmin = min(1, min(filter(lambda x : x > 0, df[c_axis])))
+        vmax = df[c_axis].max()
+    else:
+        vmin = min_max_values[c_axis]['min']
+        vmax = min_max_values[c_axis]['max']
     df.loc[(df[c_axis] == 0), c_axis] = vmin # avoid 0 values for log scale
 
     # set font sizes
