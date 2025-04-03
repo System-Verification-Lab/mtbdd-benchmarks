@@ -176,7 +176,7 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
             pr_plot.plot_circuit_heatmaps(data, self.args, groupby=['circuit_type', 'precision'], 
                                         x_axis='n_qubits',  y_axis='tolerance', c_axis=c_axis,
                                         min_max_values=self.min_max_values,
-                                        x_label='merging parameter $\\delta$', y_label='qubits',
+                                        x_label='merging threshold $\\delta$', y_label='qubits',
                                         c_label=c_label, palette=pal)
 
 
