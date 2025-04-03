@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from matplotlib.ticker import LogLocator, FormatStrFormatter
+from matplotlib.ticker import LogLocator
 from matplotlib.colors import LogNorm
 
 
@@ -490,7 +490,8 @@ def plot_multicore_scatter_sharing(df : pd.DataFrame, args, scaling='log'):
 
 
 def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_axis, 
-                          min_max_values=None, x_label=None, y_label=None, title=None, palette='rocket'):
+                          min_max_values=None, x_label=None, y_label=None, c_label=None, palette='rocket',
+                          c_label_pos='title'):
     """
     For every 'groupby'circuit type and precision plot x_axis vs y_axis vs c_axis.
     """
@@ -507,7 +508,7 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
     df.loc[(df[c_axis] == 0), c_axis] = vmin # avoid 0 values for log scale
 
     # set font sizes
-    _small = 14
+    _small = 17
     _medium = _small+2
     _big = _medium+2
     plt.rc('font', size=_small)
@@ -526,40 +527,47 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
         # left and right versions
         for side in ['left', 'right', 'complete']:
             # plot
-            fig, ax = plt.subplots(layout='constrained')
+            fig, ax = plt.subplots() # layout='constrained'
             ax.set_title(' ', fontsize=1) # little extra padding on top for highest cbar tick
             cmap = sns.color_palette(palette=palette, as_cmap=True)
+            cbar_kws = {'label': c_label} if c_label_pos == 'cbar' else {}
+            cbar_kws['shrink'] = 0.8
             sns.heatmap(heatmap_data, ax=ax, norm=LogNorm(vmin=vmin, vmax=vmax), square=True, 
-                        cmap=cmap, cbar=(side != 'left'))
+                        cmap=cmap, cbar=(side != 'left'), cbar_kws=cbar_kws)
 
             # styling
-            xlabels = [f"${latex_float(f.get_text(), False)}$" for f in ax.get_xticklabels()]
-            ax.set_xticklabels(xlabels)
+            ax.set_xticks(np.arange(0.5, len(heatmap_data.columns))) # force all ticks
+            xlabels = [f"${latex_float(f, False)}$" for f in heatmap_data.columns]
+            ylabels = [f.get_text() for f in ax.get_yticklabels()]
+            # limit numer of displayed tick labels
+            if len(xlabels) >= 10:
+                xlabels = [l if i == 0 or i % 2 == 0 else '' for i, l in enumerate(xlabels)]
+            if len(ylabels) >= 8:
+                ylabels = [l if i % 2 == 0 else '' for i, l in enumerate(ylabels)]
+            ax.set_xticklabels(xlabels, rotation=90, ha='center')
+            ax.set_yticklabels(ylabels)
+            if ax.collections[0].colorbar is not None:
+                ax.collections[0].colorbar.minorticks_off()
             if x_label is not None:
                 ax.set_xlabel(x_label)
             if y_label is not None:
                 ax.set_ylabel(y_label)
-            if title is not None:
+            if c_label is not None:
+                _c_label = f', {c_label}' if c_label_pos == 'title' else ''
                 if group_id[0] in CIRCUIT_NAMES:
-                    ax.set_title(f'{CIRCUIT_NAMES[group_id[0]]}, {title}')
+                    ax.set_title(f'{CIRCUIT_NAMES[group_id[0]]}{_c_label}')
                 else:
-                    ax.set_title(f'{group_id}, {title}')
+                    ax.set_title(f'{group_id}{_c_label}')
             if side == 'right':
                 ax.set_ylabel(None)
                 ax.set_yticklabels([])
-            
-            # fit
-            fig.draw_without_rendering()
-            tb = fig.get_tightbbox(fig.canvas.get_renderer())
-            fig.set_size_inches(tb.width, tb.height)
-
 
             # save figure
             for _format in FORMATS:
                 output_dir = os.path.join(plots_dir(args),'heatmaps','_'.join(groupby + [c_axis]), side, _format)
                 outputpath = os.path.join(output_dir, f"{'_'.join([str(x) for x in group_id])}_{c_axis}")
                 Path(output_dir).mkdir(parents=True, exist_ok=True)
-                fig.savefig(f"{outputpath}.{_format}")
+                fig.savefig(f"{outputpath}.{_format}", bbox_inches='tight')
             fig.clear()
             plt.close()
 

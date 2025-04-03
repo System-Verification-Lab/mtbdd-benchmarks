@@ -168,16 +168,16 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
         print(f"Writing plots to {pr_plot.plots_dir(self.args)}")
         # plot c_axis for n_qubits vs tolerance, grouped by circuit type (and precision)
         data = self.df.loc[(self.df['precision'] != 128)] # don't plot ground truth TODO: don't hardcode
-        for c_axis, title, pal in zip(['max_error_abs', 'final_nodes'],
-                                      ['max error',     'node count'],
-                                      ['rocket_r',      'mako_r']):
+        for c_axis, c_label, pal in zip(['max_error_abs', 'final_nodes'],
+                                        ['max error',     'node count'],
+                                        ['rocket_r',      'mako_r']):
             if c_axis not in data:
                 continue
             pr_plot.plot_circuit_heatmaps(data, self.args, groupby=['circuit_type', 'precision'], 
                                         x_axis='n_qubits',  y_axis='tolerance', c_axis=c_axis,
                                         min_max_values=self.min_max_values,
                                         x_label='merging parameter $\\delta$', y_label='qubits',
-                                        title=title, palette=pal)
+                                        c_label=c_label, palette=pal)
 
 
 class EqCheckPlotPipeline(PlotPipeline):
