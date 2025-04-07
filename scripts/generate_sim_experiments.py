@@ -35,7 +35,7 @@ parser.add_argument('--min_qubits', type=int, help="Only include circuits with a
 parser.add_argument('--max_qubits', type=int, help="Only include circuits up to max_qubits.")
 parser.add_argument('--norm_strat', choices=['low','max','min','l2'], default='max', help="Norm strat to use for all q-sylvan runs.")
 parser.add_argument('--tolerances', nargs='+', default=['1e-14'], help="Edge/leaf value merging tolerances to test.")
-parser.add_argument('--precisions', nargs='+', default=['64'], help="MTBDD MPC precisions to test..")
+parser.add_argument('--precisions', nargs='+', default=['53'], help="MTBDD MPC precisions to test. (Default=53=number of mantissa bits for IEEE 754 doubles.)")
 parser.add_argument('--ground_truth_prec', action='store', default=128, type=int, help="Ground truth precision (0 disables ground truth run).")
 parser.add_argument('--dd_types', nargs='+', choices=['mtbdd','evdd'], default=['mtbdd'], help="DD type(s) to run for q-sylvan.")
 parser.add_argument('--wgt_tab_size', type=int, default=23, help="log2 of max edge weight table size.")
