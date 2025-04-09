@@ -21,7 +21,7 @@ EQTAB_SELECTION = ['graphstate', 'grover-noancilla', 'qaoa', 'qnn', 'qft',
 NEQTAB_SELECTION = ['grover-noancilla', 'qaoa', 'qft', 'qnn', 'qpe-inexact',
                     'vqe', 'wstate']
 ORDER = ['q-sylvan-alternating','q-sylvan-pauli','quokka-sharp','mqt-qcec-all']
-CIRCUIT_NAMES = {'qpeexact' : 'QPE exact', 'dj' : 'Deutsch–Jozsa', 'wstate': 'W state'}
+CIRCUIT_NAMES = {'qpeexact' : 'QPE exact', 'dj' : 'Deutsch–Jozsa', 'wstate': 'W-state'}
 
 def plots_dir(args):
     """
@@ -491,7 +491,7 @@ def plot_multicore_scatter_sharing(df : pd.DataFrame, args, scaling='log'):
 
 def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_axis, 
                           min_max_values=None, x_label=None, y_label=None, c_label=None, palette='rocket',
-                          c_label_pos='title'):
+                          c_label_pos='title', clean_rows=False):
     """
     For every 'groupby'circuit type and precision plot x_axis vs y_axis vs c_axis.
     """
@@ -523,6 +523,9 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
         # shape data as table
         heatmap_data = group.pivot(index=x_axis, columns=y_axis, values=c_axis)
         heatmap_data.sort_index(inplace=True, ascending=False)
+        if clean_rows:
+            # plot only complete rows
+            heatmap_data = heatmap_data.dropna()
 
         # left and right versions
         for side in ['left', 'right', 'complete']:
@@ -542,8 +545,8 @@ def plot_circuit_heatmaps(df : pd.DataFrame, args, groupby, x_axis, y_axis, c_ax
             # limit numer of displayed tick labels
             if len(xlabels) >= 10:
                 xlabels = [l if i == 0 or i % 2 == 0 else '' for i, l in enumerate(xlabels)]
-            if len(ylabels) >= 8:
-                ylabels = [l if i % 2 == 0 else '' for i, l in enumerate(ylabels)]
+            if len(ylabels) >= 6:
+                ylabels = [l if (i + len(ylabels)) % 2 == 1 else '' for i, l in enumerate(ylabels)]
             ax.set_xticklabels(xlabels, rotation=90, ha='center')
             ax.set_yticklabels(ylabels)
             if ax.collections[0].colorbar is not None:

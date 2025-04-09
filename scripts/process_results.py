@@ -177,7 +177,7 @@ class NumericalStabilityPlotPipeline(SimPlotPipeline):
                                         x_axis='n_qubits',  y_axis='tolerance', c_axis=c_axis,
                                         min_max_values=self.min_max_values,
                                         x_label='merging threshold $\\delta$', y_label='qubits',
-                                        c_label=c_label, palette=pal)
+                                        c_label=c_label, palette=pal, clean_rows=True)
 
 
 class EqCheckPlotPipeline(PlotPipeline):
