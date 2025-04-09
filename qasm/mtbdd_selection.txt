@@ -27,4 +27,3 @@ wstate_indep_qiskit_15.qasm
 wstate_indep_qiskit_16.qasm
 wstate_indep_qiskit_17.qasm
 wstate_indep_qiskit_18.qasm
-wstate_indep_qiskit_19.qasm
