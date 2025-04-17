@@ -1,6 +1,6 @@
 # QEST+FORMATS 2025 artifact
 
-This directory contains the artifact corresponding to the paper "...", submitted to QEST+FORMATS 2025. The following is included:
+This directory contains the artifact corresponding to the paper "Numerical stability of quantitative system analysis using decision diagrams", submitted to QEST+FORMATS 2025. The following is included:
 * Usage instructions (this document).
 * The DD package Q-Sylvan, in `tools/q-sylvan/` (also available online at https://github.com/System-Verification-Lab/Q-Sylvan).
 * Quantum circuits in the OpenQASM format used for benchmarks, in `qasm/`.
@@ -11,6 +11,37 @@ This directory contains the artifact corresponding to the paper "...", submitted
 ## 1. Docker instructions
 
 TODO
+
+
+
+## 1. Install dependencies + compile (when not using the Docker image)
+
+1. Clone this repository including its submodules.
+```shell
+$ git clone --recurse-submodules <this repo's url>
+```
+
+2. Install basic build tools.
+```shell
+$ sudo apt install build-essential cmake autoconf
+```
+
+3. Install dependencies.
+```shell
+$ sudo apt install libpopt-dev libgmp-dev libmpfr-dev libmpc-dev
+```
+
+4. Install Python libraries (creating a virtual environment is optional but recommended).
+```shell
+$ python -m venv .venv
+$ source .venv/bin/activate
+$ pip install -r requirements.txt
+```
+
+5. After installing the dependencies above, Q-Sylvan can be compiled with
+```shell
+$ ./compile_all.sh -q
+```
 
 
 ## 2. Running + plotting
