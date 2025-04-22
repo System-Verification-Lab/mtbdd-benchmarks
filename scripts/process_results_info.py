@@ -180,7 +180,7 @@ def update_min_max_values(df : pd.DataFrame, keys, args):
     
     for key in keys:
         min_max_values[key] = {}
-        min_max_values[key]['min'] = min(1, min(filter(lambda x : x > 0, df[min])))
+        min_max_values[key]['min'] = min(1, min(filter(lambda x : x > 0, df[key])))
         min_max_values[key]['max'] = df[key].max()
 
     # 2. compare against previous values
@@ -196,6 +196,11 @@ def update_min_max_values(df : pd.DataFrame, keys, args):
                                                      min_max_values_prev[key]['max'])
     
     # 3. write new values
+    for key in keys:
+        for m in ['min', 'max']:
+            # convert to python int because json lib has issues with np dtypes...
+            if isinstance(min_max_values[key][m], np.integer):
+                min_max_values[key][m] = int(min_max_values[key][m])
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(min_max_values, f, indent=2)
 
