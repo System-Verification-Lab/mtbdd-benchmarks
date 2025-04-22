@@ -2,9 +2,9 @@
 
 This directory contains the artifact corresponding to the paper "Numerical stability of quantitative system analysis using decision diagrams", submitted to QEST+FORMATS 2025. The following is included:
 * Usage instructions (this document).
-* The DD package Q-Sylvan, in `tools/q-sylvan/` (also available online at https://github.com/System-Verification-Lab/Q-Sylvan).
-* Quantum circuits in the OpenQASM format used for benchmarks, in `qasm/`.
-* Python scripts for setting up and processing benchmarks, in `scripts/`.
+* The DD package Q-Sylvan, in `mtbdd-benchmarks/tools/q-sylvan/` (also available online at https://github.com/System-Verification-Lab/Q-Sylvan).
+* Quantum circuits in the OpenQASM format used for benchmarks, in `mtbdd-benchmarks/qasm/`.
+* Python scripts for setting up and processing benchmarks, in `mtbdd-benchmarks/scripts/`.
 
 
 
@@ -14,8 +14,6 @@ NOTE: In the Docker image all required dependencies are preinstalled. When not u
 
 
 In the following, `#` indicates commands run in the the Docker container, and `$` indicates commands run in the host shell.
-
-Getting started:
 
 Create a new Docker container from the given Docker image. The last command should show the new container with the name "qf25-artifact".
 ```
