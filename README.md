@@ -14,7 +14,8 @@ This artifact has been tested on Ubuntu 24.04 and on Windows 11 using WSL 2.
 NOTE: In the Docker image all required dependencies are preinstalled. When not using this repository from the Docker image, dependency installation instructions can be found in [`dependencies.md`](dependencies.md).
 
 
-In the following, `#` indicates commands run in the the Docker container, and `$` indicates commands run in the host shell.
+* In the following, `#` indicates commands run in the the Docker container, and `$` indicates commands run in the host shell.
+* Depending on the system, `docker` might need to be run as `sudo docker` in the commands below.
 
 Create a new Docker container from the given Docker image. The last command should show the new container with the name "qf25-artifact".
 ```
