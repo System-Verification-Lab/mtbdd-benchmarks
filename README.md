@@ -6,6 +6,7 @@ This directory contains the artifact corresponding to the paper "Numerical stabi
 * Quantum circuits in the OpenQASM format used for benchmarks, in `mtbdd-benchmarks/qasm/`.
 * Python scripts for setting up and processing benchmarks, in `mtbdd-benchmarks/scripts/`.
 
+This artifact has been tested on Ubuntu 24.04 and on Windows 11 using WSL 2.
 
 
 ## 1. Docker instructions
