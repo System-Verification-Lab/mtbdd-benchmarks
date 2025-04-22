@@ -1,20 +1,20 @@
 
 # plotting, etc.
-Jinja2 == 3.1.4
+#Jinja2 == 3.1.4
 matplotlib == 3.9.0
 numpy == 2.0.1
 pandas == 2.2.2
 seaborn == 0.13.2
 
 # generating benchmarks
-qiskit == 1.1.1
+#qiskit == 1.1.1
 
 # tools to benchmark against
-mqt.qcec == 2.7.0
+#mqt.qcec == 2.7.0
 #mqt.ddsim == 1.23.0 # using cl executable (using python package would require
                      # updating whole benchmark pipeline)
 #quokka-sharp == 1.0.2 # using local version with most recent updates
 
 # for building Quasimodo
-invoke == 2.2.0
-pybind11 == 2.13.1
+#invoke == 2.2.0
+#pybind11 == 2.13.1
