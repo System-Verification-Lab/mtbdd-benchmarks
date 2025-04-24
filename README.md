@@ -11,7 +11,7 @@ This artifact has been tested on Ubuntu 24.04 and on Windows 11 using WSL 2.
 
 ## 1. Docker instructions
 
-NOTE: In the Docker image all required dependencies are preinstalled. When not using this repository from the Docker image, dependency installation instructions can be found in [`dependencies.md`](dependencies.md).
+NOTE: In the [Docker image](https://doi.org/10.5281/zenodo.15274872) all required dependencies are preinstalled. When not using this repository from the Docker image, dependency installation instructions can be found in [`dependencies.md`](dependencies.md).
 
 
 * In the following, `#` indicates commands run in the the Docker container, and `$` indicates commands run in the host shell.
