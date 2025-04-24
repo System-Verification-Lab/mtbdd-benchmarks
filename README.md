@@ -17,7 +17,7 @@ NOTE: In the Docker image all required dependencies are preinstalled. When not u
 * In the following, `#` indicates commands run in the the Docker container, and `$` indicates commands run in the host shell.
 * Depending on the system, `docker` might need to be run as `sudo docker` in the commands below.
 
-Create a new Docker container from the given Docker image. The last command should show the new container with the name "qf25-artifact".
+1\. Create a new Docker container from the given Docker image. The last command should show the new container with the name "qf25-artifact".
 ```
 $ docker load < qf25-artifact-img.tar
 $ docker run --name qf25-artifact -it qf25-artifact-img:v1.0 bash
@@ -25,7 +25,7 @@ $ docker run --name qf25-artifact -it qf25-artifact-img:v1.0 bash
 $ docker ps -a
 ```
 
-Enter the Docker container and compile the source:
+2\. Enter the Docker container and compile the source:
 ```
 $ docker start qf25-artifact
 $ docker exec -it qf25-artifact bash
@@ -34,7 +34,7 @@ $ docker exec -it qf25-artifact bash
 # ./compile_all.sh -qr
 ```
 
-To retrieve all output (include figures) from the Docker container, run the following on the host shell.
+3\. To retrieve all output (include figures) from the Docker container, run the following on the host shell.
 ```
 $ docker cp qf25-artifact:/mtbdd-benchmarks/experiments/ .
 ```
